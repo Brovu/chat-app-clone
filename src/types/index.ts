@@ -14,6 +14,6 @@ export interface IMess {
   id: string;
   text: string;
   sent_at: string;
-  users: string;
+  user: string;
   conversation_id: string;
 }

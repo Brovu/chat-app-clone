@@ -141,12 +141,9 @@ const Sidebar = () => {
         <SearchIcon style={{ cursor: "pointer" }} />
         <SeacrchInput placeholder="Seacrh in Conversation" />
       </StyledSearch>
-      <StyledButton
-        onClick={() => {
-          toggleDialog(true);
-        }}
-      >
-        Start a new Conversation
+
+      <StyledButton onClick={() => toggleDialog(true)}>
+        Start a new conversation
       </StyledButton>
 
       {conversationsSnapshot?.docs.map((conversation) => (
