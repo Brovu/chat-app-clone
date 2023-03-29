@@ -20,6 +20,7 @@ import { addDoc, collection, query, where } from "firebase/firestore";
 import { useCollection } from "react-firebase-hooks/firestore";
 import ConversationSelect from "./ConversationSelect";
 import { auth, db } from "../config/firebase";
+
 import { Conversation } from "../types";
 
 const StyledContainer = styled.div`
@@ -38,7 +39,6 @@ const StyledHeader = styled.div`
   background-color: white;
   border-bottom: 1px solid whitesmoke;
   top: 0;
-  padding: 10px;
   height: 50px;
   z-index: 10;
 `;
@@ -126,12 +126,6 @@ const Sidebar = () => {
           <StyleUserAvatar src={loggedInUser?.photoURL || ""} />
         </Tooltip>
         <div>
-          <IconButton>
-            <ChatIcon />
-          </IconButton>
-          <IconButton>
-            <MoreVerticalIcon />
-          </IconButton>
           <IconButton>
             <LogoutIcon onClick={logOut} />
           </IconButton>

@@ -1,7 +1,15 @@
 import { useAuthState } from "react-firebase-hooks/auth";
 import styled from "styled-components";
-import { auth } from "../config/firebase";
+import { auth, db } from "../config/firebase";
 import { IMess } from "../types";
+import DeleteIcon from "@mui/icons-material/Delete";
+import { doc, deleteDoc } from "firebase/firestore";
+
+const StyledContainer = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 3px;
+`;
 
 const StyledMess = styled.p`
   width: fit-content;
@@ -33,15 +41,33 @@ const StyledReceiverMess = styled(StyledMess)`
   background-color: whitesmoke;
 `;
 
+const StyledDeleteIcon = styled(DeleteIcon)`
+  cursor: pointer;
+  color: green;
+`;
+
 const Mess = ({ mess }: { mess: IMess }) => {
   const [loggedInUser] = useAuthState(auth);
   const MessType =
     loggedInUser?.email === mess.user ? StyledSenderMess : StyledReceiverMess;
+
+  const handleDeleteMessage = async () => {
+    try {
+      const messageRef = doc(db, "messages", mess.id);
+      await deleteDoc(messageRef);
+    } catch (error) {
+      console.error("Error deleting message: ", error);
+    }
+  };
+
   return (
-    <MessType>
-      {mess.text}
-      <StyledTimeStamp>{mess.sent_at}</StyledTimeStamp>
-    </MessType>
+    <StyledContainer>
+      <MessType>
+        {mess.text}
+        <StyledTimeStamp>{mess.sent_at}</StyledTimeStamp>
+      </MessType>
+      <StyledDeleteIcon onClick={handleDeleteMessage} />
+    </StyledContainer>
   );
 };
 

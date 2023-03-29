@@ -16,20 +16,26 @@ import { useRouter } from "next/router";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { auth, db } from "../config/firebase";
 import { generateQueryGetMess } from "../utils/generateQueryGetMess";
-import { useCollection } from "react-firebase-hooks/firestore";
+import {
+  useCollection,
+  useCollectionData,
+} from "react-firebase-hooks/firestore";
 import Mess from "./Mess";
 import {
   KeyboardEventHandler,
   MouseEventHandler,
   useState,
   useRef,
+  useEffect,
 } from "react";
 import {
   addDoc,
   collection,
   doc,
+  query,
   serverTimestamp,
   setDoc,
+  where,
 } from "firebase/firestore";
 
 const StyledHeader = styled.div`
@@ -86,13 +92,13 @@ const StyledInput = styled.input`
   flex-grow: 1;
   padding: 15px;
   margin: 0 15px;
-  border: 1px solid #ccc;
+  border: 1px solid pink;
   border-radius: 10px;
   background-color: white;
 `;
 
 const EndOfMessagesForAutoScroll = styled.div`
-  margin-bottom: 30px;
+  margin-bottom: 50px;
 `;
 
 type NewType = {
@@ -102,9 +108,11 @@ type NewType = {
 
 const ConversationScreen = ({ conversation, mess }: NewType) => {
   const endOfMessagesRef = useRef<HTMLDivElement>(null);
+
   const scrollToTheEnd = () => {
-    endOfMessagesRef.current?.scrollIntoView({ behavior: "smooth" });
+    endOfMessagesRef.current?.scrollIntoView();
   };
+
   const addNewMessToDbAndUpdate = async () => {
     await setDoc(
       doc(db, "users", loggedInUser?.email as string),
@@ -119,8 +127,8 @@ const ConversationScreen = ({ conversation, mess }: NewType) => {
       text: newMess,
       user: loggedInUser?.email,
     });
+
     setNewMess("");
-    scrollToTheEnd();
   };
 
   const sendNewMessOnEnter: KeyboardEventHandler<HTMLInputElement> = (e) => {
@@ -128,6 +136,11 @@ const ConversationScreen = ({ conversation, mess }: NewType) => {
       e.preventDefault();
       if (!newMess) return;
       addNewMessToDbAndUpdate();
+      if (numMessages > 5) {
+        scrollToTheEnd();
+      } else {
+        return;
+      }
     }
   };
 
@@ -135,9 +148,15 @@ const ConversationScreen = ({ conversation, mess }: NewType) => {
     e.preventDefault();
     if (!newMess) return;
     addNewMessToDbAndUpdate();
+    if (numMessages > 5) {
+      scrollToTheEnd();
+    } else {
+      return;
+    }
   };
 
   const [newMess, setNewMess] = useState("");
+
   const [loggedInUser] = useAuthState(auth);
   const conversationUsers = conversation.users;
 
@@ -159,34 +178,66 @@ const ConversationScreen = ({ conversation, mess }: NewType) => {
     }
   };
 
+  //Count quatity of messages
+  const messageRef = collection(db, "messages");
+  const conversationMessagesQuery = query(
+    messageRef,
+    where("conversation_id", "==", conversationId)
+  );
+  const [messagesSnapshot] = useCollectionData(conversationMessagesQuery, {
+    idField: "id",
+  } as any);
+  const numMessages = messagesSnapshot?.length ?? 0;
+
+  //Count quatity of conversations per user
+  const conversationRef = collection(db, "conversations");
+  const conversationconversationsQuery = query(
+    conversationRef,
+    where("users", "array-contains", loggedInUser?.email)
+  );
+  const [conversationsSnapshot] = useCollectionData(
+    conversationconversationsQuery,
+    {
+      idField: "id",
+    } as any
+  );
+  const numconversations = conversationsSnapshot?.length ?? 0;
+  console.log(numconversations);
+
+  //Count quatity of conversations per user
+
   const { recipient, recipientEmail } = useRecipient(conversationUsers);
   return (
     <>
-      <StyledHeader>
-        <RecipientAvt recipient={recipient} recipientEmail={recipientEmail} />
-        <StyledHeaderInfo>
-          <StyledH3>{recipientEmail}</StyledH3>
-          {recipient && (
-            <span>
-              Last Online: {convertTimestampToString(recipient.lastSeen)}
-            </span>
-          )}
-        </StyledHeaderInfo>
-        <StyledHeaderIcons>
-          <IconButton>
-            <AttachFileIcon />
-          </IconButton>
-          <IconButton>
-            <MoreVertIcon />
-          </IconButton>
-        </StyledHeaderIcons>
-      </StyledHeader>
+      {numconversations > 0 && (
+        <StyledHeader>
+          <RecipientAvt recipient={recipient} recipientEmail={recipientEmail} />
+          <StyledHeaderInfo>
+            <StyledH3>{recipientEmail}</StyledH3>
+            {recipient && (
+              <span>
+                Last Online: {convertTimestampToString(recipient.lastSeen)}
+              </span>
+            )}
+          </StyledHeaderInfo>
+          <StyledHeaderIcons>
+            <IconButton>
+              <AttachFileIcon />
+            </IconButton>
+            <IconButton>
+              <MoreVertIcon />
+            </IconButton>
+          </StyledHeaderIcons>
+        </StyledHeader>
+      )}
       <StyledMessContainer>
         {showMess()} <EndOfMessagesForAutoScroll ref={endOfMessagesRef} />
       </StyledMessContainer>
 
       <StyledInputContainer>
-        <InsertEmoticonIcon />
+        <IconButton >
+          <InsertEmoticonIcon />
+        </IconButton  >
         <StyledInput
           value={newMess}
           onChange={(e) => setNewMess(e.target.value)}

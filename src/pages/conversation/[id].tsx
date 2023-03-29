@@ -1,6 +1,8 @@
 import { doc, getDoc, getDocs } from "firebase/firestore";
 import { GetServerSideProps } from "next";
 import Head from "next/head";
+import { useRouter } from "next/router";
+import { useEffect } from "react";
 import { useAuthState } from "react-firebase-hooks/auth";
 import styled from "styled-components";
 import ConversationScreen from "../../components/ConversationScreen";
