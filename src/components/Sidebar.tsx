@@ -2,10 +2,8 @@ import { Avatar, Button } from "@mui/material";
 import styled from "styled-components";
 import Tooltip from "@mui/material/Tooltip";
 import IconButton from "@mui/material/IconButton";
-import ChatIcon from "@mui/icons-material/Chat";
-import MoreVerticalIcon from "@mui/icons-material/MoreVert";
+
 import LogoutIcon from "@mui/icons-material/Logout";
-import SearchIcon from "@mui/icons-material/Search";
 import { signOut } from "firebase/auth";
 import { useAuthState } from "react-firebase-hooks/auth";
 import TextField from "@mui/material/TextField";
@@ -22,6 +20,7 @@ import ConversationSelect from "./ConversationSelect";
 import { auth, db } from "../config/firebase";
 
 import { Conversation } from "../types";
+import SearchUser from "./SearchUser";
 
 const StyledContainer = styled.div`
   height: 100vh;
@@ -41,19 +40,6 @@ const StyledHeader = styled.div`
   top: 0;
   height: 50px;
   z-index: 10;
-`;
-
-const StyledSearch = styled.div`
-  display: flex;
-  border-radius: 5px;
-  padding: 10px;
-  align-items: center;
-`;
-
-const SeacrchInput = styled.input`
-  border: none;
-  flex: 1;
-  outline: none;
 `;
 
 const StyledButton = styled(Button)`
@@ -131,15 +117,10 @@ const Sidebar = () => {
           </IconButton>
         </div>
       </StyledHeader>
-      <StyledSearch>
-        <SearchIcon style={{ cursor: "pointer" }} />
-        <SeacrchInput placeholder="Seacrh in Conversation" />
-      </StyledSearch>
-
+      <SearchUser />;
       <StyledButton onClick={() => toggleDialog(true)}>
         Start a new conversation
       </StyledButton>
-
       {conversationsSnapshot?.docs.map((conversation) => (
         <ConversationSelect
           key={conversation.id}
@@ -147,7 +128,6 @@ const Sidebar = () => {
           conversationUsers={(conversation.data() as Conversation).users}
         />
       ))}
-
       <Dialog
         open={isOpenDialog}
         onClose={() => {

@@ -10,7 +10,6 @@ import Login from "./login";
 
 export default function App({ Component, pageProps }: AppProps) {
   const [loggedInUser, loading] = useAuthState(auth);
-  const router = useRouter();
 
   useEffect(() => {
     const setUserInDb = async () => {

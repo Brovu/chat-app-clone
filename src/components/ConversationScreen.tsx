@@ -110,7 +110,7 @@ const ConversationScreen = ({ conversation, mess }: NewType) => {
   const endOfMessagesRef = useRef<HTMLDivElement>(null);
 
   const scrollToTheEnd = () => {
-    endOfMessagesRef.current?.scrollIntoView();
+    endOfMessagesRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
   const addNewMessToDbAndUpdate = async () => {
@@ -123,7 +123,7 @@ const ConversationScreen = ({ conversation, mess }: NewType) => {
     );
     await addDoc(collection(db, "messages"), {
       conversation_id: conversationId,
-      sent_at: serverTimestamp(),
+      sent_at: serverTimestamp(), 
       text: newMess,
       user: loggedInUser?.email,
     });
@@ -235,9 +235,9 @@ const ConversationScreen = ({ conversation, mess }: NewType) => {
       </StyledMessContainer>
 
       <StyledInputContainer>
-        <IconButton >
+        <IconButton>
           <InsertEmoticonIcon />
-        </IconButton  >
+        </IconButton>
         <StyledInput
           value={newMess}
           onChange={(e) => setNewMess(e.target.value)}

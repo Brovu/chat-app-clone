@@ -58,6 +58,7 @@ const Mess = ({ mess }: { mess: IMess }) => {
     } catch (error) {
       console.error("Error deleting message: ", error);
     }
+    
   };
 
   return (
