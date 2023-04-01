@@ -16,3 +16,11 @@ export interface IMess {
   user: string;
   conversation_id: string;
 }
+
+export interface ImgMess {
+  id: string;
+  imgUrl: string;
+  sent_at: string;
+  user: string;
+  conversation_id: string;
+}

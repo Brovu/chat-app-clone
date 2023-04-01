@@ -17,6 +17,12 @@ export const generateQueryGetMess = (conversationID?: string) =>
     orderBy("sent_at", "asc")
   );
 
+export const generateQueryGetMessImg = (conversationID?: string) =>
+  query(
+    collection(db, "messages"),
+    where("conversation_id", "==", conversationID)
+  );
+
 export const transformMess = (mess: QueryDocumentSnapshot<DocumentData>) =>
   ({
     id: mess.id,

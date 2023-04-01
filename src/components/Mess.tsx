@@ -29,7 +29,7 @@ const StyledTimeStamp = styled.span`
   text-align: right;
   bottom: 0;
   right: 0;
-  font-size: x-small;
+  font-size: 1rem;
 `;
 
 const StyledSenderMess = styled(StyledMess)`
@@ -58,7 +58,6 @@ const Mess = ({ mess }: { mess: IMess }) => {
     } catch (error) {
       console.error("Error deleting message: ", error);
     }
-    
   };
 
   return (

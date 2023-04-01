@@ -6,15 +6,16 @@ import SendIcon from "@mui/icons-material/Send";
 import IconButton from "@mui/material/IconButton";
 import styled from "styled-components";
 import { useRecipient } from "../hooks/useRecipient";
-import { Conversation, IMess } from "../types";
+import { Conversation, IMess, ImgMess } from "../types";
 import {
   convertTimestampToString,
+  generateQueryGetMessImg,
   transformMess,
 } from "../utils/generateQueryGetMess";
 import RecipientAvt from "./RecipientAvt";
 import { useRouter } from "next/router";
 import { useAuthState } from "react-firebase-hooks/auth";
-import { auth, db } from "../config/firebase";
+import { auth, db, storage } from "../config/firebase";
 import { generateQueryGetMess } from "../utils/generateQueryGetMess";
 import {
   useCollection,
@@ -37,6 +38,8 @@ import {
   setDoc,
   where,
 } from "firebase/firestore";
+import { ref } from "firebase/storage";
+import MessImg from "./MessImg";
 
 const StyledHeader = styled.div`
   position: sticky;
@@ -101,16 +104,39 @@ const EndOfMessagesForAutoScroll = styled.div`
   margin-bottom: 50px;
 `;
 
+const StyledFileInput = styled.input``;
+const StyleLabel = styled.label``;
+
 type NewType = {
   conversation: Conversation;
   mess: IMess[];
+  image: ImgMess[];
 };
 
-const ConversationScreen = ({ conversation, mess }: NewType) => {
+const ConversationScreen = ({ conversation, mess, image }: NewType) => {
   const endOfMessagesRef = useRef<HTMLDivElement>(null);
+  const [newMess, setNewMess] = useState("");
+
+  const [Img, setImg] = useState(null);
 
   const scrollToTheEnd = () => {
     endOfMessagesRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  const addNewImg = async () => {
+    const reader = new FileReader();
+    reader.readAsDataURL(Img);
+    reader.onload = async () => {
+      const base64Img = reader.result;
+      await addDoc(collection(db, "messages"), {
+        conversation_id: conversationId,
+        sent_at: serverTimestamp(),
+        imgUrl: base64Img,
+        user: loggedInUser?.email,
+      });
+    };
+    setImg(null);
+    setNewMess("");
   };
 
   const addNewMessToDbAndUpdate = async () => {
@@ -123,7 +149,7 @@ const ConversationScreen = ({ conversation, mess }: NewType) => {
     );
     await addDoc(collection(db, "messages"), {
       conversation_id: conversationId,
-      sent_at: serverTimestamp(), 
+      sent_at: serverTimestamp(),
       text: newMess,
       user: loggedInUser?.email,
     });
@@ -134,8 +160,12 @@ const ConversationScreen = ({ conversation, mess }: NewType) => {
   const sendNewMessOnEnter: KeyboardEventHandler<HTMLInputElement> = (e) => {
     if (e.key === "Enter") {
       e.preventDefault();
-      if (!newMess) return;
-      addNewMessToDbAndUpdate();
+      if (Img) {
+        addNewImg();
+      } else {
+        addNewMessToDbAndUpdate();
+      }
+
       if (numMessages > 5) {
         scrollToTheEnd();
       } else {
@@ -146,16 +176,17 @@ const ConversationScreen = ({ conversation, mess }: NewType) => {
 
   const sendNewMessOnClick: MouseEventHandler<HTMLButtonElement> = (e) => {
     e.preventDefault();
-    if (!newMess) return;
-    addNewMessToDbAndUpdate();
+    if (Img) {
+      addNewImg();
+    } else {
+      addNewMessToDbAndUpdate();
+    }
     if (numMessages > 5) {
       scrollToTheEnd();
     } else {
       return;
     }
   };
-
-  const [newMess, setNewMess] = useState("");
 
   const [loggedInUser] = useAuthState(auth);
   const conversationUsers = conversation.users;
@@ -175,6 +206,18 @@ const ConversationScreen = ({ conversation, mess }: NewType) => {
       return messSnapshot.docs.map((mess) => (
         <Mess key={mess.id} mess={transformMess(mess)} />
       ));
+    }
+  };
+
+  const queryGetMessImg = generateQueryGetMessImg(conversationId as string);
+  const [imgSnapshot, imgLoading] = useCollection(queryGetMessImg);
+
+  const showImg = () => {
+    if (imgLoading) {
+      return image.map((img) => <MessImg img={img} key={img.id} />);
+    }
+    if (imgSnapshot) {
+      //return imgSnapshot.docs.map((img) => <MessImg key={img.id} img={img} />);
     }
   };
 
@@ -222,9 +265,6 @@ const ConversationScreen = ({ conversation, mess }: NewType) => {
           </StyledHeaderInfo>
           <StyledHeaderIcons>
             <IconButton>
-              <AttachFileIcon />
-            </IconButton>
-            <IconButton>
               <MoreVertIcon />
             </IconButton>
           </StyledHeaderIcons>
@@ -244,11 +284,25 @@ const ConversationScreen = ({ conversation, mess }: NewType) => {
           onKeyDown={sendNewMessOnEnter}
           placeholder="Write your text..."
         />
+
         {newMess && (
           <IconButton onClick={sendNewMessOnClick}>
             <SendIcon />
           </IconButton>
         )}
+
+        <StyledFileInput
+          style={{ display: "none" }}
+          id="file"
+          type="file"
+          accept="image/*"
+          onChange={(e) => setImg(e.target.files[0])}
+        />
+        <IconButton>
+          <StyleLabel style={{ cursor: "pointer" }} htmlFor="file">
+            <AttachFileIcon />
+          </StyleLabel>
+        </IconButton>
         <IconButton>
           <MicIcon />
         </IconButton>
