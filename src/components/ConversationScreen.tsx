@@ -6,6 +6,7 @@ import SendIcon from "@mui/icons-material/Send";
 import IconButton from "@mui/material/IconButton";
 import styled from "styled-components";
 import { useRecipient } from "../hooks/useRecipient";
+
 import { Conversation, IMess, ImgMess } from "../types";
 import {
   convertTimestampToString,
@@ -38,9 +39,7 @@ import {
   setDoc,
   where,
 } from "firebase/firestore";
-import { ref } from "firebase/storage";
-import MessImg from "./MessImg";
-
+import Picker from "emoji-picker-react";
 const StyledHeader = styled.div`
   position: sticky;
   display: flex;
@@ -76,6 +75,7 @@ const StyledH3 = styled.h3`
 `;
 
 const StyledMessContainer = styled.div`
+  position: relative;
   padding: 30px;
   background-color: #e5ded8;
   min-height: 90vh;
@@ -100,6 +100,14 @@ const StyledInput = styled.input`
   background-color: white;
 `;
 
+const StyledEmoji = styled.div`
+  position: absolute;
+  top: 0;
+  overflow-y: auto;
+  background-color: transparent;
+  z-index: 100;
+`;
+
 const EndOfMessagesForAutoScroll = styled.div`
   margin-bottom: 50px;
 `;
@@ -116,6 +124,25 @@ type NewType = {
 const ConversationScreen = ({ conversation, mess, image }: NewType) => {
   const endOfMessagesRef = useRef<HTMLDivElement>(null);
   const [newMess, setNewMess] = useState("");
+  const [showPicker, setShowPicker] = useState(false);
+  const [pickEmoji, setPickEmoji] = useState(null);
+
+  const onEmojiClick = (emojiObject) => {
+    setPickEmoji(emojiObject);
+    setNewMess((prevValue) => prevValue + emojiObject.emoji);
+    console.log(emojiObject);
+  };
+  const openPickerEmotion = () => {
+    if (!showPicker) {
+      setShowPicker(true);
+    } else {
+      setShowPicker(false);
+    }
+  };
+
+  const closeEmojiPicker = () => {
+    setShowPicker(false);
+  };
 
   const [Img, setImg] = useState(null);
 
@@ -209,18 +236,6 @@ const ConversationScreen = ({ conversation, mess, image }: NewType) => {
     }
   };
 
-  const queryGetMessImg = generateQueryGetMessImg(conversationId as string);
-  const [imgSnapshot, imgLoading] = useCollection(queryGetMessImg);
-
-  const showImg = () => {
-    if (imgLoading) {
-      return image.map((img) => <MessImg img={img} key={img.id} />);
-    }
-    if (imgSnapshot) {
-      //return imgSnapshot.docs.map((img) => <MessImg key={img.id} img={img} />);
-    }
-  };
-
   //Count quatity of messages
   const messageRef = collection(db, "messages");
   const conversationMessagesQuery = query(
@@ -247,8 +262,6 @@ const ConversationScreen = ({ conversation, mess, image }: NewType) => {
   const numconversations = conversationsSnapshot?.length ?? 0;
   console.log(numconversations);
 
-  //Count quatity of conversations per user
-
   const { recipient, recipientEmail } = useRecipient(conversationUsers);
   return (
     <>
@@ -270,15 +283,29 @@ const ConversationScreen = ({ conversation, mess, image }: NewType) => {
           </StyledHeaderIcons>
         </StyledHeader>
       )}
-      <StyledMessContainer>
+      <StyledMessContainer onClick={closeEmojiPicker}>
         {showMess()} <EndOfMessagesForAutoScroll ref={endOfMessagesRef} />
+        {/* {pickEmoji && (
+          <div>
+            <br />
+            <br />
+            <span>You chose: {pickEmoji.emoji}</span>
+          </div>
+        )} */}
+        {showPicker && (
+          <StyledEmoji>
+            x
+            <Picker onEmojiClick={onEmojiClick} />
+          </StyledEmoji>
+        )}
       </StyledMessContainer>
 
       <StyledInputContainer>
-        <IconButton>
+        <IconButton onClick={openPickerEmotion}>
           <InsertEmoticonIcon />
         </IconButton>
         <StyledInput
+          type="text"
           value={newMess}
           onChange={(e) => setNewMess(e.target.value)}
           onKeyDown={sendNewMessOnEnter}

@@ -18,10 +18,8 @@ import { addDoc, collection, query, where } from "firebase/firestore";
 import { useCollection } from "react-firebase-hooks/firestore";
 import ConversationSelect from "./ConversationSelect";
 import { auth, db } from "../config/firebase";
-
 import { Conversation } from "../types";
 import SearchUser from "./SearchUser";
-
 const StyledContainer = styled.div`
   height: 100vh;
   width: 300px;
@@ -97,8 +95,12 @@ const Sidebar = () => {
         users: [loggedInUser?.email, recipientEmail],
       });
     }
-    closeDialog();
+    closeDialog;
     setRecipientEmail("");
+  };
+
+  const createByEnter = (e) => {
+    e.code === "Enter" && createConversation();
   };
 
   const logOut = async () => {
@@ -117,7 +119,7 @@ const Sidebar = () => {
           </IconButton>
         </div>
       </StyledHeader>
-      <SearchUser />;
+      <SearchUser />
       <StyledButton onClick={() => toggleDialog(true)}>
         Start a new conversation
       </StyledButton>
@@ -130,6 +132,7 @@ const Sidebar = () => {
       ))}
       <Dialog
         open={isOpenDialog}
+        onKeyDown={createByEnter}
         onClose={() => {
           toggleDialog(false);
         }}
