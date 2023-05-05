@@ -7,7 +7,6 @@ import IconButton from "@mui/material/IconButton";
 import styled from "styled-components";
 import { useRecipient } from "../hooks/useRecipient";
 
-import { Conversation, IMess, ImgMess } from "../types";
 import {
   convertTimestampToString,
   generateQueryGetMessImg,
@@ -115,13 +114,7 @@ const EndOfMessagesForAutoScroll = styled.div`
 const StyledFileInput = styled.input``;
 const StyleLabel = styled.label``;
 
-type NewType = {
-  conversation: Conversation;
-  mess: IMess[];
-  image: ImgMess[];
-};
-
-const ConversationScreen = ({ conversation, mess, image }: NewType) => {
+const ConversationScreen = ({ conversation, mess }) => {
   const endOfMessagesRef = useRef<HTMLDivElement>(null);
   const [newMess, setNewMess] = useState("");
   const [showPicker, setShowPicker] = useState(false);
