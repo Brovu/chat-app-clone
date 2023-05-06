@@ -283,7 +283,7 @@ const ConversationScreen = ({ conversation, mess }) => {
             <br />
             <br />
             <span>You chose: {pickEmoji.emoji}</span>
-          </div>
+          </div>group-hover:flex group-hover:flex-col group-hover:justify-start group-hover:items-start
         )} */}
         {showPicker && (
           <StyledEmoji>

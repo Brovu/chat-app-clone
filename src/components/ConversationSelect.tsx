@@ -54,7 +54,7 @@ const ConversationSelect = ({ id, conversationUsers }: CSProps) => {
 
   const onSelectConversation = () => {
     router.push(`/conversation/${id}`);
-  };
+  }; 
   return (
     <StyledWrapper>
       <StyledContainer onClick={onSelectConversation}>

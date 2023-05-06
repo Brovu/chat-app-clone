@@ -95,7 +95,7 @@ const Sidebar = () => {
         users: [loggedInUser?.email, recipientEmail],
       });
     }
-    closeDialog;
+    closeDialog();
     setRecipientEmail("");
   };
 

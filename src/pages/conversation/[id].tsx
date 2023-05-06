@@ -1,11 +1,9 @@
 import { doc, getDoc, getDocs } from "firebase/firestore";
 import { GetServerSideProps } from "next";
 import Head from "next/head";
-import { useRouter } from "next/router";
-import { useEffect } from "react";
+import dynamic from "next/dynamic";
 import { useAuthState } from "react-firebase-hooks/auth";
 import styled from "styled-components";
-import ConversationScreen from "../../components/ConversationScreen";
 import Sidebar from "../../components/Sidebar";
 import { auth, db } from "../../config/firebase";
 import { Conversation, IMess } from "../../types";
@@ -14,6 +12,7 @@ import {
   transformMess,
 } from "../../utils/generateQueryGetMess";
 import { getRecipientEmail } from "../../utils/getRecipientEmail";
+import Loading from "../../components/Loading";
 
 const StyledContainer = styled.div`
   display: flex;
@@ -35,6 +34,14 @@ interface Props {
   conversation: Conversation;
   mess: IMess[];
 }
+
+const ConversationScreen = dynamic(
+  () => import("../../components/ConversationScreen"),
+  {
+    loading: () => <Loading />,
+  }
+);
+
 const Conversations = ({ conversation, mess }: Props) => {
   const [loggedInUser] = useAuthState(auth);
   return (
